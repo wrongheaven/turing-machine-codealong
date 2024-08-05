@@ -6,36 +6,32 @@ import (
 
 type Machine struct {
 	Data []uint
-	Size int
 
 	Head int
 }
 
-func NewMachine(size int) *Machine {
-	m := Machine{Size: size}
+func NewMachine() *Machine {
+	m := Machine{}
 	m.Data = []uint{}
-	for range m.Size {
-		m.Data = append(m.Data, 0)
-	}
 	return &m
 }
 
-func (m *Machine) Randomize() {
+func (m *Machine) Randomize(size int) {
 	m.Data = []uint{}
-	for range m.Size {
+	for range size {
 		m.Data = append(m.Data, uint(rand.Intn(2)))
 	}
 }
 
 func (m *Machine) Execute(inst *Instruction) int {
 	if m.Data[m.Head] == inst.Expected {
-		m.Data[m.Head] = inst.WriteYes
-		m.Head += int(inst.DirYes)
-		return inst.NextInstYes
+		m.Data[m.Head] = inst.Yes.Write
+		m.Head += int(inst.Yes.Dir)
+		return inst.Yes.NextInst
 	} else {
-		m.Data[m.Head] = inst.WriteNo
-		m.Head += int(inst.DirNo)
-		return inst.NextInstNo
+		m.Data[m.Head] = inst.No.Write
+		m.Head += int(inst.No.Dir)
+		return inst.No.NextInst
 	}
 }
 
@@ -50,13 +46,13 @@ const (
 type Instruction struct {
 	Expected uint
 
-	WriteYes    uint
-	DirYes      Direction
-	NextInstYes int
-
-	WriteNo    uint
-	DirNo      Direction
-	NextInstNo int
+	Yes YesOrNo
+	No  YesOrNo
 
 	Null bool
+}
+type YesOrNo struct {
+	Write    uint
+	Dir      Direction
+	NextInst int
 }

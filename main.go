@@ -5,8 +5,8 @@ import (
 )
 
 func main() {
-	machine := NewMachine(4)
-	machine.Randomize()
+	machine := NewMachine()
+	machine.Randomize(8)
 
 	program := []Instruction{
 		inst(0, 1, STAY, 1, 0, RIGHT, 0),
@@ -15,19 +15,17 @@ func main() {
 
 	currentInst := 0
 	for {
-		fmt.Printf("%+v %d\n", machine.Data, machine.Head)
-
 		if program[currentInst].Null {
-			fmt.Println("program has ended")
 			break
 		}
 
-		if machine.Head == machine.Size {
-			fmt.Println("head outside tape")
-			break
+		if machine.Head == len(machine.Data) {
+			machine.Data = append(machine.Data, 0)
 		}
+		fmt.Printf("%+v %d\n", machine.Data, machine.Head)
 		currentInst = machine.Execute(&program[currentInst])
 	}
+	fmt.Printf("%+v %d\n", machine.Data, machine.Head)
 }
 
 func inst(
@@ -40,12 +38,16 @@ func inst(
 	nn int,
 ) Instruction {
 	return Instruction{
-		Expected:    ex,
-		WriteYes:    wy,
-		DirYes:      dy,
-		NextInstYes: ny,
-		WriteNo:     wn,
-		DirNo:       dn,
-		NextInstNo:  nn,
+		Expected: ex,
+		Yes: YesOrNo{
+			Write:    wy,
+			Dir:      dy,
+			NextInst: ny,
+		},
+		No: YesOrNo{
+			Write:    wn,
+			Dir:      dn,
+			NextInst: nn,
+		},
 	}
 }
